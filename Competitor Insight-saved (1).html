@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="ar" style="scroll-behavior: smooth;">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Competitor Analysis Report</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        
+        :root {
+            --primary-dark: #003f64;
+            --primary-light: #f7f9ff;
+            --secondary-dark: #2e3d4b;
+            --secondary-light: #e8f2ff;
+            --background-color: #d5e4f7;
+            --error-color: #de3730;
+            --neutral-dark: #3a3b3e;
+            --neutral-light: #f9f9fc;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--background-color);
+            color: var(--neutral-dark);
+        }
+
+        /* Custom spinner */
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-left-color: var(--primary-light);
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Tailwind overrides for theme colors */
+        .text-primary-dark { color: var(--primary-dark); }
+        .bg-primary-dark { background-color: var(--primary-dark); }
+        .hover\:bg-primary-dark:hover { background-color: var(--primary-dark); }
+        .focus\:ring-primary-dark:focus { --tw-ring-color: var(--primary-dark); }
+        .border-primary-dark { border-color: var(--primary-dark); }
+
+        .text-primary-light { color: var(--primary-light); }
+        .bg-primary-light { background-color: var(--primary-light); }
+
+        .text-secondary-dark { color: var(--secondary-dark); }
+        .bg-secondary-dark { background-color: var(--secondary-dark); }
+
+        .text-secondary-light { color: var(--secondary-light); }
+        .bg-secondary-light { background-color: var(--secondary-light); }
+
+        .text-neutral-dark { color: var(--neutral-dark); }
+        .bg-neutral-dark { background-color: var(--neutral-dark); }
+
+        .text-neutral-light { color: var(--neutral-light); }
+        .bg-neutral-light { background-color: var(--neutral-light); }
+
+        .text-error-color { color: var(--error-color); }
+        .bg-error-color { background-color: var(--error-color); }
+
+        .border-neutral-light { border-color: var(--neutral-light); }
+        .ring-primary-dark { --tw-ring-color: var(--primary-dark); }
+    </style>
+</head>
+<body class="p-4 md:p-10 flex flex-col items-center min-h-screen">
+
+    <div id="app-container" class="max-w-4xl w-full mx-auto bg-neutral-light rounded-xl shadow-2xl p-6 md:p-10">
+        <header class="text-center mb-10">
+            <h1 class="text-4xl font-extrabold text-primary-dark mb-2">📊 تقارير تحليل المنافسين</h1>
+            <p class="text-lg text-secondary-dark">أداة استخبارات سوق متقدمة للكشف عن الرؤى التنافسية.</p>
+        </header>
+
+        <div id="input-form" class="space-y-6 mb-10">
+            
+            <div>
+                <label for="competitorName" class="block text-sm font-semibold text-neutral-dark mb-1">1. اسم المنافس:</label>
+                <input type="text" id="competitorName" placeholder="مثال: Adobe Express" class="w-full p-3 border border-secondary-light rounded-lg focus:ring-2 focus:ring-primary-dark focus:border-primary-dark transition duration-150" required>
+            </div>
+
+            <div>
+                <label for="industrySector" class="block text-sm font-semibold text-neutral-dark mb-1">2. القطاع أو المجال (اختياري لتحليل أدق):</label>
+                <input type="text" id="industrySector" placeholder="مثال: برامج التصميم الجرافيكي أو SaaS" class="w-full p-3 border border-secondary-light rounded-lg focus:ring-2 focus:ring-primary-dark focus:border-primary-dark transition duration-150">
+            </div>
+
+            <div>
+                <label class="block text-sm font-semibold text-neutral-dark mb-2">3. لغة التقرير النهائية:</label>
+                <div class="flex flex-wrap gap-4 justify-center md:justify-start">
+                    <label class="inline-flex items-center p-3 bg-secondary-light rounded-lg hover:bg-primary-light cursor-pointer transition duration-200 ease-in-out">
+                        <input type="radio" name="reportLanguage" value="Arabic" checked class="form-radio h-5 w-5 text-primary-dark focus:ring-primary-dark" onclick="document.documentElement.lang = 'ar'">
+                        <span class="ml-2 font-medium text-neutral-dark">العربية</span>
+                    </label>
+                    <label class="inline-flex items-center p-3 bg-secondary-light rounded-lg hover:bg-primary-light cursor-pointer transition duration-200 ease-in-out">
+                        <input type="radio" name="reportLanguage" value="English" class="form-radio h-5 w-5 text-primary-dark focus:ring-primary-dark" onclick="document.documentElement.lang = 'en'">
+                        <span class="ml-2 font-medium text-neutral-dark">English</span>
+                    </label>
+                </div>
+            </div>
+
+            <button id="generateReportBtn" class="w-full flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-primary-light bg-primary-dark hover:bg-secondary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-dark transition duration-200 ease-in-out">
+                <span id="buttonText">إنشاء التقرير</span>
+                <div id="spinner" class="spinner ml-3 hidden"></div>
+            </button>
+        </div>
+
+        <div id="report-output" class="hidden mt-10 p-6 md:p-8 bg-primary-light rounded-xl shadow-lg border border-secondary-light">
+            <h2 id="reportTitle" class="text-3xl font-bold text-primary-dark mb-6 text-center"></h2>
+            
+            <section class="mb-8">
+                <h3 id="executiveSummaryHeading" class="text-2xl font-semibold text-secondary-dark mb-3 border-b-2 border-secondary-light pb-2"></h3>
+                <p id="executiveSummaryContent" class="text-neutral-dark leading-relaxed"></p>
+            </section>
+
+            <section class="mb-8">
+                <h3 id="marketPositioningHeading" class="text-2xl font-semibold text-secondary-dark mb-3 border-b-2 border-secondary-light pb-2"></h3>
+                <ul id="marketPositioningContent" class="list-disc list-inside space-y-2 text-neutral-dark"></ul>
+            </section>
+
+            <section class="mb-8">
+                <h3 id="swotAnalysisHeading" class="text-2xl font-semibold text-secondary-dark mb-3 border-b-2 border-secondary-light pb-2"></h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <h4 id="strengthsHeading" class="text-xl font-medium text-primary-dark mb-2"></h4>
+                        <ul id="strengthsContent" class="list-disc list-inside space-y-1 text-neutral-dark"></ul>
+                    </div>
+                    <div>
+                        <h4 id="weaknessesHeading" class="text-xl font-medium text-primary-dark mb-2"></h4>
+                        <ul id="weaknessesContent" class="list-disc list-inside space-y-1 text-neutral-dark"></ul>
+                    </div>
+                    <div>
+                        <h4 id="opportunitiesHeading" class="text-xl font-medium text-primary-dark mb-2"></h4>
+                        <ul id="opportunitiesContent" class="list-disc list-inside space-y-1 text-neutral-dark"></ul>
+                    </div>
+                    <div>
+                        <h4 id="threatsHeading" class="text-xl font-medium text-primary-dark mb-2"></h4>
+                        <ul id="threatsContent" class="list-disc list-inside space-y-1 text-neutral-dark"></ul>
+                    </div>
+                </div>
+            </section>
+
+            <section class="mb-8">
+                <h3 id="keyTakeawaysHeading" class="text-2xl font-semibold text-secondary-dark mb-3 border-b-2 border-secondary-light pb-2"></h3>
+                <ul id="keyTakeawaysContent" class="list-disc list-inside space-y-2 text-neutral-dark"></ul>
+            </section>
+
+            <section>
+                <h3 id="recommendationsHeading" class="text-2xl font-semibold text-secondary-dark mb-3 border-b-2 border-secondary-light pb-2"></h3>
+                <ul id="recommendationsContent" class="list-disc list-inside space-y-2 text-neutral-dark"></ul>
+            </section>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const competitorNameInput = document.getElementById('competitorName');
+            const industrySectorInput = document.getElementById('industrySector');
+            const generateReportBtn = document.getElementById('generateReportBtn');
+            const spinner = document.getElementById('spinner');
+            const buttonText = document.getElementById('buttonText');
+            const reportOutput = document.getElementById('report-output');
+            const reportLanguageRadios = document.querySelectorAll('input[name="reportLanguage"]');
+
+            const reportElements = {
+                reportTitle: document.getElementById('reportTitle'),
+                executiveSummaryHeading: document.getElementById('executiveSummaryHeading'),
+                executiveSummaryContent: document.getElementById('executiveSummaryContent'),
+                marketPositioningHeading: document.getElementById('marketPositioningHeading'),
+                marketPositioningContent: document.getElementById('marketPositioningContent'),
+                swotAnalysisHeading: document.getElementById('swotAnalysisHeading'),
+                strengthsHeading: document.getElementById('strengthsHeading'),
+                strengthsContent: document.getElementById('strengthsContent'),
+                weaknessesHeading: document.getElementById('weaknessesHeading'),
+                weaknessesContent: document.getElementById('weaknessesContent'),
+                opportunitiesHeading: document.getElementById('opportunitiesHeading'),
+                opportunitiesContent: document.getElementById('opportunitiesContent'),
+                threatsHeading: document.getElementById('threatsHeading'),
+                threatsContent: document.getElementById('threatsContent'),
+                keyTakeawaysHeading: document.getElementById('keyTakeawaysHeading'),
+                keyTakeawaysContent: document.getElementById('keyTakeawaysContent'),
+                recommendationsHeading: document.getElementById('recommendationsHeading'),
+                recommendationsContent: document.getElementById('recommendationsContent')
+            };
+
+            const reportContent = {
+                'Arabic': {
+                    buttonGenerating: 'جاري الإنشاء...',
+                    reportTitle: (name) => `تقرير تحليل المنافس: ${name}`,
+                    executiveSummaryHeading: 'ملخص تنفيذي',
+                    executiveSummaryContent: (name, sector) => `يقدم هذا التقرير تحليلاً شاملاً للمنافس ${name}${sector ? ` في قطاع ${sector}` : ''}. يهدف التقرير إلى تحديد نقاط القوة والضعف الرئيسية للمنافس، بالإضافة إلى الفرص والتهديدات في السوق، لتوفير رؤى استراتيجية قيمة.`,
+                    marketPositioningHeading: 'الوضع في السوق',
+                    marketPositioningContent: [
+                        'حصة سوقية كبيرة في الفئة المستهدفة.',
+                        'سمعة قوية للعلامة التجارية وولاء العملاء.',
+                        'شبكة توزيع واسعة وقنوات وصول متعددة.',
+                        'ابتكار مستمر للمنتجات والخدمات.'
+                    ],
+                    swotAnalysisHeading: 'تحليل SWOT',
+                    strengthsHeading: 'نقاط القوة',
+                    strengthsContent: [
+                        'قيادة قوية في الابتكار التكنولوجي.',
+                        'قاعدة عملاء مخلصين ومتنامية.',
+                        'موارد مالية قوية تدعم التوسع.',
+                        'فريق عمل ذو خبرة عالية.'
+                    ],
+                    weaknessesHeading: 'نقاط الضعف',
+                    weaknessesContent: [
+                        'ارتفاع تكاليف التشغيل مقارنة ببعض المنافسين.',
+                        'بطء في التكيف مع بعض التغيرات السريعة في السوق.',
+                        'الاعتماد على عدد قليل من الموردين الرئيسيين.',
+                        'تغطية جغرافية محدودة في بعض الأسواق الناشئة.'
+                    ],
+                    opportunitiesHeading: 'الفرص',
+                    opportunitiesContent: [
+                        'توسع السوق في المناطق النامية.',
+                        'الطلب المتزايد على المنتجات الصديقة للبيئة.',
+                        'الشراكات الاستراتيجية مع الشركات التكميلية.',
+                        'الاستفادة من التقنيات الجديدة مثل الذكاء الاصطناعي.'
+                    ],
+                    threatsHeading: 'التهديدات',
+                    threatsContent: [
+                        'دخول منافسين جدد بأسعار تنافسية.',
+                        'تغيرات تنظيمية قد تؤثر على العمليات.',
+                        'التقلبات الاقتصادية العالمية.',
+                        'تحديات أمن البيانات والخصوصية.'
+                    ],
+                    keyTakeawaysHeading: 'النتائج الرئيسية',
+                    keyTakeawaysContent: [
+                        'المنافس يتمتع بوضع قوي في السوق بفضل الابتكار والولاء.',
+                        'هناك حاجة لمعالجة نقاط الضعف المتعلقة بالتكاليف والتكيف.',
+                        'فرص النمو كبيرة في الأسواق الجديدة والشراكات.',
+                        'يجب مراقبة التهديدات مثل المنافسة الجديدة والتغيرات التنظيمية.'
+                    ],
+                    recommendationsHeading: 'التوصيات',
+                    recommendationsContent: [
+                        'الاستثمار في البحث والتطوير لتعزيز الميزة التنافسية.',
+                        'تحسين الكفاءة التشغيلية لخفض التكاليف.',
+                        'استكشاف أسواق جديدة وتوسيع التغطية الجغرافية.',
+                        'بناء تحالفات استراتيجية لمواجهة التهديدات.'
+                    ]
+                },
+                'English': {
+                    buttonGenerating: 'Generating...',
+                    reportTitle: (name) => `Competitor Analysis Report: ${name}`,
+                    executiveSummaryHeading: 'Executive Summary',
+                    executiveSummaryContent: (name, sector) => `This report provides a comprehensive analysis of competitor ${name}${sector ? ` in the ${sector} sector` : ''}. It aims to identify the competitor's key strengths and weaknesses, as well as market opportunities and threats, to provide valuable strategic insights.`,
+                    marketPositioningHeading: 'Market Positioning',
+                    marketPositioningContent: [
+                        'Significant market share in the target category.',
+                        'Strong brand reputation and customer loyalty.',
+                        'Extensive distribution network and multiple access channels.',
+                        'Continuous innovation in products and services.'
+                    ],
+                    swotAnalysisHeading: 'SWOT Analysis',
+                    strengthsHeading: 'Strengths',
+                    strengthsContent: [
+                        'Strong leadership in technological innovation.',
+                        'Loyal and growing customer base.',
+                        'Robust financial resources supporting expansion.',
+                        'Highly experienced and skilled team.'
+                    ],
+                    weaknessesHeading: 'Weaknesses',
+                    weaknessesContent: [
+                        'Higher operating costs compared to some competitors.',
+                        'Slow adaptation to some rapid market changes.',
+                        'Reliance on a few key suppliers.',
+                        'Limited geographical coverage in some emerging markets.'
+                    ],
+                    opportunitiesHeading: 'Opportunities',
+                    opportunitiesContent: [
+                        'Market expansion into developing regions.',
+                        'Increasing demand for eco-friendly products.',
+                        'Strategic partnerships with complementary businesses.',
+                        'Leveraging new technologies like AI.'
+                    ],
+                    threatsHeading: 'Threats',
+                    threatsContent: [
+                        'Entry of new competitors with aggressive pricing.',
+                        'Regulatory changes that could impact operations.',
+                        'Global economic fluctuations.',
+                        'Data security and privacy challenges.'
+                    ],
+                    keyTakeawaysHeading: 'Key Takeaways',
+                    keyTakeawaysContent: [
+                        'The competitor holds a strong market position due to innovation and loyalty.',
+                        'Weaknesses related to costs and adaptability need to be addressed.',
+                        'Significant growth opportunities exist in new markets and partnerships.',
+                        'Threats like new competition and regulatory changes must be monitored.'
+                    ],
+                    recommendationsHeading: 'Recommendations',
+                    recommendationsContent: [
+                        'Invest in R&D to enhance competitive advantage.',
+                        'Improve operational efficiency to reduce costs.',
+                        'Explore new markets and expand geographical coverage.',
+                        'Form strategic alliances to counter threats.'
+                    ]
+                }
+            };
+
+            function populateReport(language, competitorName, industrySector) {
+                const langData = reportContent[language];
+                
+                reportElements.reportTitle.textContent = langData.reportTitle(competitorName);
+                reportElements.executiveSummaryHeading.textContent = langData.executiveSummaryHeading;
+                reportElements.executiveSummaryContent.textContent = langData.executiveSummaryContent(competitorName, industrySector);
+                
+                reportElements.marketPositioningHeading.textContent = langData.marketPositioningHeading;
+                reportElements.marketPositioningContent.innerHTML = '';
+                langData.marketPositioningContent.forEach(item => {
+                    const li = document.createElement('li');
+                    li.textContent = item;
+                    reportElements.marketPositioningContent.appendChild(li);
+                });
+
+                reportElements.swotAnalysisHeading.textContent = langData.swotAnalysisHeading;
+                
+                reportElements.strengthsHeading.textContent = langData.strengthsHeading;
+                reportElements.strengthsContent.innerHTML = '';
+                langData.strengthsContent.forEach(item => {
+                    const li = document.createElement('li');
+                    li.textContent = item;
+                    reportElements.strengthsContent.appendChild(li);
+                });
+
+                reportElements.weaknessesHeading.textContent = langData.weaknessesHeading;
+                reportElements.weaknessesContent.innerHTML = '';
+                langData.weaknessesContent.forEach(item => {
+                    const li = document.createElement('li');
+                    li.textContent = item;
+                    reportElements.weaknessesContent.appendChild(li);
+                });
+
+                reportElements.opportunitiesHeading.textContent = langData.opportunitiesHeading;
+                reportElements.opportunitiesContent.innerHTML = '';
+                langData.opportunitiesContent.forEach(item => {
+                    const li = document.createElement('li');
+                    li.textContent = item;
+                    reportElements.opportunitiesContent.appendChild(li);
+                });
+
+                reportElements.threatsHeading.textContent = langData.threatsHeading;
+                reportElements.threatsContent.innerHTML = '';
+                langData.threatsContent.forEach(item => {
+                    const li = document.createElement('li');
+                    li.textContent = item;
+                    reportElements.threatsContent.appendChild(li);
+                });
+
+                reportElements.keyTakeawaysHeading.textContent = langData.keyTakeawaysHeading;
+                reportElements.keyTakeawaysContent.innerHTML = '';
+                langData.keyTakeawaysContent.forEach(item => {
+                    const li = document.createElement('li');
+                    li.textContent = item;
+                    reportElements.keyTakeawaysContent.appendChild(li);
+                });
+
+                reportElements.recommendationsHeading.textContent = langData.recommendationsHeading;
+                reportElements.recommendationsContent.innerHTML = '';
+                langData.recommendationsContent.forEach(item => {
+                    const li = document.createElement('li');
+                    li.textContent = item;
+                    reportElements.recommendationsContent.appendChild(li);
+                });
+            }
+
+            generateReportBtn.addEventListener('click', () => {
+                const competitorName = competitorNameInput.value.trim();
+                const industrySector = industrySectorInput.value.trim();
+                const selectedLanguage = document.querySelector('input[name="reportLanguage"]:checked').value;
+
+                if (!competitorName) {
+                    alert(selectedLanguage === 'Arabic' ? 'الرجاء إدخال اسم المنافس.' : 'Please enter the competitor\'s name.');
+                    return;
+                }
+
+                // Show loading state
+                buttonText.textContent = reportContent[selectedLanguage].buttonGenerating;
+                spinner.classList.remove('hidden');
+                generateReportBtn.disabled = true;
+                reportOutput.classList.add('hidden');
+
+                // Simulate API call
+                setTimeout(() => {
+                    populateReport(selectedLanguage, competitorName, industrySector);
+                    reportOutput.classList.remove('hidden');
+                    
+                    // Restore button state
+                    buttonText.textContent = selectedLanguage === 'Arabic' ? 'إنشاء التقرير' : 'Generate Report';
+                    spinner.classList.add('hidden');
+                    generateReportBtn.disabled = false;
+
+                    // Scroll to report
+                    reportOutput.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }, 2000); // 2-second delay
+            });
+
+            // Update button text when language changes
+            reportLanguageRadios.forEach(radio => {
+                radio.addEventListener('change', () => {
+                    const selectedLanguage = document.querySelector('input[name="reportLanguage"]:checked').value;
+                    buttonText.textContent = selectedLanguage === 'Arabic' ? 'إنشاء التقرير' : 'Generate Report';
+                    // If report is already visible, update its language
+                    if (!reportOutput.classList.contains('hidden')) {
+                        const competitorName = competitorNameInput.value.trim();
+                        const industrySector = industrySectorInput.value.trim();
+                        populateReport(selectedLanguage, competitorName, industrySector);
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
